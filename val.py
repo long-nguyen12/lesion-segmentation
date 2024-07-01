@@ -80,7 +80,7 @@ def iou_np(y_true, y_pred):
     return intersection / (union + epsilon)
 
 
-def get_scores(gts, prs, imgs, ds=None):
+def get_scores(gts, prs, ds=None):
     mean_precision = 0
     mean_recall = 0
     mean_iou = 0
@@ -89,7 +89,7 @@ def get_scores(gts, prs, imgs, ds=None):
     e_measure = 0
     mae = 0
     f_measure = 0
-    for gt, pr, im in zip(gts, prs, imgs):
+    for gt, pr, im in zip(gts, prs):
         mean_precision += precision_np(gt, pr)
         mean_recall += recall_np(gt, pr)
         mean_iou += iou_np(gt, pr)
@@ -131,9 +131,8 @@ def inference(model, test_loader, device, ds=None):
     model.eval()
     gts = []
     prs = []
-    imgs = []
     for i, pack in enumerate(test_loader, start=1):
-        image, gt, name = pack
+        image, gt = pack
         gt = gt[0][0]
         gt = np.asarray(gt, np.float32)
         image = image.to(device)
@@ -142,9 +141,8 @@ def inference(model, test_loader, device, ds=None):
         res = (res - res.min()) / (res.max() - res.min() + 1e-8)
         gts.append(gt)
         prs.append(res)
-        imgs.append(name)
 
-    return get_scores(gts, prs, imgs, ds)
+    return get_scores(gts, prs, ds)
 
 
 if __name__ == "__main__":
