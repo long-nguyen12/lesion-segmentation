@@ -398,8 +398,7 @@ class PVTv2(nn.Module):
             for blk in block:
                 x = blk(x, H, W)
             x = norm(x)
-            if i != self.num_stages - 1:
-                x = x.reshape(B, H, W, -1).permute(0, 3, 1, 2).contiguous()
+            x = x.reshape(B, H, W, -1).permute(0, 3, 1, 2).contiguous()
             outs.append(x)
 
         return outs
