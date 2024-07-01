@@ -267,18 +267,18 @@ if __name__ == "__main__":
 
                 torch.cuda.synchronize()
 
-            # ---- train visualization ----
-            print(
-                "{} Training Epoch [{:03d}/{:03d}], "
-                "[loss: {:0.4f}, dice: {:0.4f}, iou: {:0.4f}]".format(
-                    datetime.now(),
-                    epoch,
-                    args.num_epochs,
-                    loss_record.show(),
-                    dice.show(),
-                    iou.show(),
-                )
+        # ---- train visualization ----
+        print(
+            "{} Training Epoch [{:03d}/{:03d}], "
+            "[loss: {:0.4f}, dice: {:0.4f}, iou: {:0.4f}]".format(
+                datetime.now(),
+                epoch,
+                args.num_epochs,
+                loss_record.show(),
+                dice.show(),
+                iou.show(),
             )
+        )
 
         _miou, _, _, _ = inference(model, val_loader, device)
         if _miou > best_iou:
