@@ -56,12 +56,11 @@ class LesionSegmentation(nn.Module):
         x4_size = x4.size()[2:]
 
         x1 = self.cbam_0(x1)
-        x2 = self.cbam_0(x2)
-        x3 = self.cbam_0(x3)
-        x4 = self.cbam_0(x4)
+        x2 = self.cbam_1(x2)
+        x3 = self.cbam_2(x3)
+        x4 = self.cbam_3(x4)
 
-
-        decoder_1 = self.decode_head.forward(segout)  # 88x88
+        decoder_1 = self.decode_head.forward([x1, x2, x3, x4])  # 88x88
         lateral_map_1 = F.interpolate(decoder_1, size=x.shape[2:], mode="bicubic")
 
         return lateral_map_1
