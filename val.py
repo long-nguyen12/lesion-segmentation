@@ -89,7 +89,7 @@ def get_scores(gts, prs, ds=None):
     e_measure = 0
     mae = 0
     f_measure = 0
-    for gt, pr, im in zip(gts, prs):
+    for gt, pr in zip(gts, prs):
         mean_precision += precision_np(gt, pr)
         mean_recall += recall_np(gt, pr)
         mean_iou += iou_np(gt, pr)
