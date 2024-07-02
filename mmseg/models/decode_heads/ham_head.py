@@ -238,7 +238,7 @@ class LightHamHead(BaseDecodeHead):
             resize(
                 level,
                 size=inputs[0].shape[2:],
-                mode='bicubic',
+                mode='bilinear',
                 align_corners=self.align_corners) for level in inputs
         ]
 

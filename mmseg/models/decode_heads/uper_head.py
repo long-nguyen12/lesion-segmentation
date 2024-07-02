@@ -104,7 +104,7 @@
 #             laterals[i - 1] += resize(
 #                 laterals[i],
 #                 size=prev_shape,
-#                 mode='bicubic',
+#                 mode='bilinear',
 #                 align_corners=self.align_corners)
 
 #         # build outputs
@@ -119,7 +119,7 @@
 #             fpn_outs[i] = resize(
 #                 fpn_outs[i],
 #                 size=fpn_outs[0].shape[2:],
-#                 mode='bicubic',
+#                 mode='bilinear',
 #                 align_corners=self.align_corners)
 #         fpn_outs = torch.cat(fpn_outs, dim=1)
 #         output = self.fpn_bottleneck(fpn_outs)
@@ -161,7 +161,7 @@ class PPM(nn.Module):
     def forward(self, x: Tensor) -> Tensor:
         outs = []
         for stage in self.stages:
-            outs.append(F.interpolate(stage(x), size=x.shape[-2:], mode='bicubic', align_corners=True))
+            outs.append(F.interpolate(stage(x), size=x.shape[-2:], mode='bilinear', align_corners=True))
 
         outs = [x] + outs[::-1]
         out = self.bottleneck(torch.cat(outs, dim=1))
@@ -198,12 +198,12 @@ class UPerHead(BaseDecodeHead):
 
         for i in reversed(range(len(features)-1)):
             feature = self.fpn_in[i](features[i])
-            f = feature + F.interpolate(f, size=feature.shape[-2:], mode='bicubic', align_corners=False)
+            f = feature + F.interpolate(f, size=feature.shape[-2:], mode='bilinear', align_corners=False)
             fpn_features.append(self.fpn_out[i](f))
 
         fpn_features.reverse()
         for i in range(1, len(features)):
-            fpn_features[i] = F.interpolate(fpn_features[i], size=fpn_features[0].shape[-2:], mode='bicubic', align_corners=False)
+            fpn_features[i] = F.interpolate(fpn_features[i], size=fpn_features[0].shape[-2:], mode='bilinear', align_corners=False)
  
         output = self.bottleneck(torch.cat(fpn_features, dim=1))
         output = self.conv_seg(self.dropout(output))

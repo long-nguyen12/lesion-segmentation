@@ -51,7 +51,7 @@ class FAM(nn.Module):
     def forward(self, feat_l, feat_s):
         feat_up = feat_s
         if feat_l.shape[2:] != feat_s.shape[2:]:
-            feat_up = F.interpolate(feat_s, size=feat_l.shape[2:], mode='bicubic', align_corners=False)
+            feat_up = F.interpolate(feat_s, size=feat_l.shape[2:], mode='bilinear', align_corners=False)
         
         feat_arm = self.lateral_conv(feat_l)
         offset = self.offset(torch.cat([feat_arm, feat_up*2], dim=1))

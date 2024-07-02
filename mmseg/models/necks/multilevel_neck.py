@@ -65,6 +65,6 @@ class MultiLevelNeck(nn.Module):
         outs = []
         for i in range(self.num_outs):
             x_resize = F.interpolate(
-                inputs[i], scale_factor=self.scales[i], mode='bicubic')
+                inputs[i], scale_factor=self.scales[i], mode='bilinear')
             outs.append(self.convs[i](x_resize))
         return tuple(outs)

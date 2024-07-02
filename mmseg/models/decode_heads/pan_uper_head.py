@@ -45,7 +45,7 @@ class ConvBnRelu(nn.Module):
         if self.add_relu:
             x = self.activation(x)
         if self.interpolate:
-            x = F.interpolate(x, scale_factor=2, mode="bicubic", align_corners=True)
+            x = F.interpolate(x, scale_factor=2, mode="bilinear", align_corners=True)
         return x
 
 
@@ -155,7 +155,7 @@ class PANUPerHead(BaseDecodeHead):
         for i in reversed(range(len(features) - 1)):
             feature = self.fpn_in[i](features[i])
             f = feature + F.interpolate(
-                f, size=feature.shape[-2:], mode="bicubic", align_corners=False
+                f, size=feature.shape[-2:], mode="bilinear", align_corners=False
             )
             fpn_features.append(self.fpn_out[i](f))
 
@@ -164,7 +164,7 @@ class PANUPerHead(BaseDecodeHead):
             fpn_features[i] = F.interpolate(
                 fpn_features[i],
                 size=fpn_features[0].shape[-2:],
-                mode="bicubic",
+                mode="bilinear",
                 align_corners=False,
             )
 

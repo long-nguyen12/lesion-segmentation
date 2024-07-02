@@ -249,12 +249,17 @@ if __name__ == "__main__":
                 gts = gts.to(device)
 
                 # ---- forward ----
-                map0 = model(images)
-                loss = structure_loss(map0, gts)
+                map4, map3, map2, map1 = model(images)
+                loss = (
+                    structure_loss(map1, gts)
+                    + structure_loss(map2, gts)
+                    + structure_loss(map3, gts)
+                    + structure_loss(map4, gts)
+                )
 
                 # ---- metrics ----
-                dice_score = dice_m(map0, gts)
-                iou_score = iou_m(map0, gts)
+                dice_score = dice_m(map4, gts)
+                iou_score = iou_m(map4, gts)
                 # ---- backward ----
                 loss.backward()
                 clip_gradient(optimizer, args.clip)

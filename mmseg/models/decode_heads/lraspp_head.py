@@ -74,7 +74,7 @@ class LRASPPHead(BaseDecodeHead):
         x = self.aspp_conv(x) * resize(
             self.image_pool(x),
             size=x.size()[2:],
-            mode='bicubic',
+            mode='bilinear',
             align_corners=self.align_corners)
         x = self.conv_up_input(x)
 
@@ -82,7 +82,7 @@ class LRASPPHead(BaseDecodeHead):
             x = resize(
                 x,
                 size=inputs[i].size()[2:],
-                mode='bicubic',
+                mode='bilinear',
                 align_corners=self.align_corners)
             x = torch.cat([x, self.convs[i](inputs[i])], 1)
             x = self.conv_ups[i](x)

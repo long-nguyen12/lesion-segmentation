@@ -135,7 +135,7 @@ class EncHead(BaseDecodeHead):
                 resize(
                     lateral_conv(inputs[i]),
                     size=feat.shape[2:],
-                    mode='bicubic',
+                    mode='bilinear',
                     align_corners=self.align_corners)
                 for i, lateral_conv in enumerate(self.lateral_convs)
             ]

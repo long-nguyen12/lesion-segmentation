@@ -82,7 +82,7 @@ class DepthwiseSeparableASPPHead(ASPPHead):
             resize(
                 self.image_pool(x),
                 size=x.size()[2:],
-                mode='bicubic',
+                mode='bilinear',
                 align_corners=self.align_corners)
         ]
         aspp_outs.extend(self.aspp_modules(x))
@@ -93,7 +93,7 @@ class DepthwiseSeparableASPPHead(ASPPHead):
             output = resize(
                 input=output,
                 size=c1_output.shape[2:],
-                mode='bicubic',
+                mode='bilinear',
                 align_corners=self.align_corners)
             output = torch.cat([output, c1_output], dim=1)
         output = self.sep_bottleneck(output)

@@ -348,7 +348,7 @@ def load_checkpoint(model,
                 S2 = int(L2 ** 0.5)
                 table_pretrained_resized = F.interpolate(
                      table_pretrained.permute(1, 0).view(1, nH1, S1, S1),
-                     size=(S2, S2), mode='bicubic')
+                     size=(S2, S2), mode='bilinear')
                 state_dict[table_key] = table_pretrained_resized.view(nH2, L2).permute(1, 0)
 
     # load state_dict

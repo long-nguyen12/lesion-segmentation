@@ -47,7 +47,7 @@ class FPNHead(BaseDecodeHead):
                     scale_head.append(
                         nn.Upsample(
                             scale_factor=2,
-                            mode='bicubic',
+                            mode='bilinear',
                             align_corners=self.align_corners))
             self.scale_heads.append(nn.Sequential(*scale_head))
 
@@ -61,7 +61,7 @@ class FPNHead(BaseDecodeHead):
             output = output + resize(
                 self.scale_heads[i](x[i]),
                 size=output.shape[2:],
-                mode='bicubic',
+                mode='bilinear',
                 align_corners=self.align_corners)
 
         output = self.cls_seg(output)

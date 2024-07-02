@@ -46,16 +46,16 @@ class ConvBnRelu(nn.Module):
         if self.add_relu:
             x = self.activation(x)
         if self.interpolate:
-            x = F.interpolate(x, scale_factor=2, mode="bicubic", align_corners=True)
+            x = F.interpolate(x, scale_factor=2, mode="bilinear", align_corners=True)
         return x
 
 
 class FPABlock(nn.Module):
-    def __init__(self, in_channels, out_channels, upscale_mode="bicubic"):
+    def __init__(self, in_channels, out_channels, upscale_mode="bilinear"):
         super(FPABlock, self).__init__()
 
         self.upscale_mode = upscale_mode
-        if self.upscale_mode == "bicubic":
+        if self.upscale_mode == "bilinear":
             self.align_corners = True
         else:
             self.align_corners = False
@@ -157,11 +157,11 @@ class FPABlock(nn.Module):
 
 
 class GAUBlock(nn.Module):
-    def __init__(self, in_channels: int, out_channels: int, upscale_mode: str = "bicubic"):
+    def __init__(self, in_channels: int, out_channels: int, upscale_mode: str = "bilinear"):
         super(GAUBlock, self).__init__()
 
         self.upscale_mode = upscale_mode
-        self.align_corners = True if upscale_mode == "bicubic" else None
+        self.align_corners = True if upscale_mode == "bilinear" else None
 
         self.conv1 = nn.Sequential(
             nn.AdaptiveAvgPool2d(1),
@@ -198,17 +198,17 @@ class PANDecoder(BaseDecodeHead):
         self.gau3 = GAUBlock(
             in_channels=self.in_channels[-2],
             out_channels=self.channels,
-            upscale_mode="bicubic",
+            upscale_mode="bilinear",
         )
         self.gau2 = GAUBlock(
             in_channels=self.in_channels[-3],
             out_channels=self.channels,
-            upscale_mode="bicubic",
+            upscale_mode="bilinear",
         )
         self.gau1 = GAUBlock(
             in_channels=self.in_channels[-4],
             out_channels=self.channels,
-            upscale_mode="bicubic",
+            upscale_mode="bilinear",
         )
         
         self.apply(self._init_weights)

@@ -130,7 +130,7 @@ class PSAHead(BaseDecodeHead):
                 out = resize(
                     out,
                     size=(h, w),
-                    mode='bicubic',
+                    mode='bilinear',
                     align_corners=align_corners)
             y = self.attention(out)
             if self.compact:
@@ -160,12 +160,12 @@ class PSAHead(BaseDecodeHead):
                 x_col = resize(
                     x_col,
                     size=(h, w),
-                    mode='bicubic',
+                    mode='bilinear',
                     align_corners=align_corners)
                 x_dis = resize(
                     x_dis,
                     size=(h, w),
-                    mode='bicubic',
+                    mode='bilinear',
                     align_corners=align_corners)
             y_col = self.attention(x_col)
             y_dis = self.attention_p(x_dis)
@@ -189,7 +189,7 @@ class PSAHead(BaseDecodeHead):
         out = resize(
             out,
             size=identity.shape[2:],
-            mode='bicubic',
+            mode='bilinear',
             align_corners=align_corners)
         out = self.bottleneck(torch.cat((identity, out), dim=1))
         out = self.cls_seg(out)

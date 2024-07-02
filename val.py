@@ -134,11 +134,12 @@ def inference(model, test_loader, device, ds=None):
         gt = gt[0][0]
         gt = np.asarray(gt, np.float32)
         image = image.to(device)
-        res = model(image)
+        res, res2, res3, res4 = model(image)
         res = res.sigmoid().data.cpu().numpy().squeeze()
         res = (res - res.min()) / (res.max() - res.min() + 1e-8)
+        pr = res.round()
         gts.append(gt)
-        prs.append(res)
+        prs.append(pr)
 
     return get_scores(gts, prs, ds)
 

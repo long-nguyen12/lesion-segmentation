@@ -45,7 +45,7 @@ class ConvBnRelu(nn.Module):
         if self.add_relu:
             x = self.activation(x)
         if self.interpolate:
-            x = F.interpolate(x, scale_factor=2, mode="bicubic", align_corners=True)
+            x = F.interpolate(x, scale_factor=2, mode="bilinear", align_corners=True)
         return x
 
 
@@ -162,7 +162,7 @@ class MLPPanHead(BaseDecodeHead):
         for i, cf in enumerate(features):
             cf = eval(f"self.cbam_c{i+1}")(cf)
             outs.append(
-                F.interpolate(cf, size=(H, W), mode="bicubic", align_corners=True)
+                F.interpolate(cf, size=(H, W), mode="bilinear", align_corners=True)
             )
 
         seg = self.fpa(torch.cat(outs, dim=1))

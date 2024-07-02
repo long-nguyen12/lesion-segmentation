@@ -102,7 +102,7 @@ class ASPPFPNHead(BaseDecodeHead):
             laterals[i - 1] += resize(
                 laterals[i],
                 size=prev_shape,
-                mode='bicubic',
+                mode='bilinear',
                 align_corners=self.align_corners)
 
         # build outputs
@@ -117,7 +117,7 @@ class ASPPFPNHead(BaseDecodeHead):
             fpn_outs[i] = resize(
                 fpn_outs[i],
                 size=fpn_outs[0].shape[2:],
-                mode='bicubic',
+                mode='bilinear',
                 align_corners=self.align_corners)
         #fpn_outs = torch.cat(fpn_outs, dim=1)
         #output = self.fpn_bottleneck(fpn_outs)

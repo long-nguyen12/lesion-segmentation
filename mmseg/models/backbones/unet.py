@@ -173,7 +173,7 @@ class InterpConv(nn.Module):
         padding (int): Padding of the convolutional layer. Default: 1.
         upsample_cfg (dict): Interpolation config of the upsample layer.
             Default: dict(
-                scale_factor=2, mode='bicubic', align_corners=False).
+                scale_factor=2, mode='bilinear', align_corners=False).
     """
 
     def __init__(self,
@@ -189,7 +189,7 @@ class InterpConv(nn.Module):
                  stride=1,
                  padding=0,
                  upsample_cfg=dict(
-                     scale_factor=2, mode='bicubic', align_corners=False)):
+                     scale_factor=2, mode='bilinear', align_corners=False)):
         super(InterpConv, self).__init__()
 
         self.with_cp = with_cp

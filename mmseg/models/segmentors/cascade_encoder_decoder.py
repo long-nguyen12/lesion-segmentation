@@ -73,7 +73,7 @@ class CascadeEncoderDecoder(EncoderDecoder):
         out = resize(
             input=out,
             size=img.shape[2:],
-            mode='bicubic',
+            mode='bilinear',
             align_corners=self.align_corners)
         return out
 

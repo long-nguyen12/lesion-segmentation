@@ -98,7 +98,7 @@ class ASPPHead(BaseDecodeHead):
             resize(
                 self.image_pool(x),
                 size=x.size()[2:],
-                mode='bicubic',
+                mode='bilinear',
                 align_corners=self.align_corners)
         ]
         aspp_outs.extend(self.aspp_modules(x))

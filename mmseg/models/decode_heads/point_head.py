@@ -223,7 +223,7 @@ class PointHead(BaseCascadeDecodeHead):
             refined_seg_logits = resize(
                 refined_seg_logits,
                 scale_factor=test_cfg.scale_factor,
-                mode='bicubic',
+                mode='bilinear',
                 align_corners=self.align_corners)
             batch_size, channels, height, width = refined_seg_logits.shape
             point_indices, points = self.get_points_test(

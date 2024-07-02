@@ -89,7 +89,7 @@ class EncoderDecoder(BaseSegmentor):
         out = resize(
             input=out,
             size=img.shape[2:],
-            mode='bicubic',
+            mode='bilinear',
             align_corners=self.align_corners)
         return out
 
@@ -206,7 +206,7 @@ class EncoderDecoder(BaseSegmentor):
             preds = resize(
                 preds,
                 size=img_meta[0]['ori_shape'][:2],
-                mode='bicubic',
+                mode='bilinear',
                 align_corners=self.align_corners,
                 warning=False)
         return preds
@@ -224,7 +224,7 @@ class EncoderDecoder(BaseSegmentor):
             seg_logit = resize(
                 seg_logit,
                 size=size,
-                mode='bicubic',
+                mode='bilinear',
                 align_corners=self.align_corners,
                 warning=False)
 

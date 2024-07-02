@@ -49,7 +49,7 @@ class SETRMLAHead(BaseDecodeHead):
                         act_cfg=self.act_cfg),
                     Upsample(
                         scale_factor=up_scale,
-                        mode='bicubic',
+                        mode='bilinear',
                         align_corners=self.align_corners)))
 
     def forward(self, inputs):
