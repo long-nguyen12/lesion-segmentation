@@ -149,81 +149,69 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--weight", type=str, default="")
     parser.add_argument(
-        "--test_path", type=str, default="./data/TestDataset/", help="path to dataset"
+        "--test_path", type=str, default="./data/isic-2017/", help="path to dataset"
     )
     parser.add_argument(
-        "--init_trainsize", type=str, default=352, help="path to dataset"
+        "--init_trainsize", type=str, default=256, help="path to dataset"
     )
-    parser.add_argument("--train_save", type=str, default="colonnext")
+    parser.add_argument("--train_save", type=str, default="lesion-seg")
     args = parser.parse_args()
 
-    device = torch.device("cpu")
+    device = torch.device("cuda")
 
-    ds = ["CVC-ClinicDB", "CVC-ColonDB", "ETIS-LaribPolypDB", "Kvasir", "CVC-300"]
-    for _ds in ds:
-        model = UNet(
-            backbone=dict(type="MSCAN"),
-            decode_head=dict(
-                type="MLPPanHead",
-                in_channels=[64, 128, 320, 512],
-                in_index=[0, 1, 2, 3],
-                channels=128,
-                dropout_ratio=0.1,
-                num_classes=1,
-                norm_cfg=dict(type="BN", requires_grad=True),
-                align_corners=False,
-                loss_decode=dict(
-                    type="CrossEntropyLoss", use_sigmoid=True, loss_weight=1.0
-                ),
+    model = UNet(
+        backbone=dict(type="PVTv2"),
+        decode_head=dict(
+            type="UPerHead",
+            in_channels=[64, 128, 320, 512],
+            in_index=[0, 1, 2, 3],
+            channels=128,
+            dropout_ratio=0.1,
+            num_classes=1,
+            norm_cfg=dict(type="BN", requires_grad=True),
+            align_corners=False,
+            loss_decode=dict(
+                type="CrossEntropyLoss", use_sigmoid=True, loss_weight=1.0
             ),
-            neck=None,
-            auxiliary_head=None,
-            train_cfg=dict(),
-            test_cfg=dict(mode="whole"),
-            pretrained="pretrained/mscan_b.pth",
-        ).to(device)
+        ),
+        neck=None,
+        auxiliary_head=None,
+        train_cfg=dict(),
+        test_cfg=dict(mode="whole"),
+        pretrained="pretrained/pvt_v2_b2.pth",
+    ).to(device)
 
-        # x = torch.randn(1, 3, 352, 352)
-        # CalParams(model, x)
+    # x = torch.randn(1, 3, 352, 352)
+    # CalParams(model, x)
 
-        checkpoint = torch.load(
-            f"snapshots/{args.train_save}/last.pth", map_location="cpu"
-        )
+    checkpoint = torch.load(f"snapshots/{args.train_save}/best.pth", map_location="cpu")
 
-        model.load_state_dict(checkpoint, strict=True)
-        print(f"Trained on {_ds}")
-        data_path = f"{args.test_path}/{_ds}/"
-        # inference(model, data_path, device, args)
+    model.load_state_dict(checkpoint, strict=True)
+    data_path = f"{args.test_path}/test/"
 
-        X_test = glob("{}/images/*".format(data_path))
-        X_test.sort()
-        y_test = glob("{}/masks/*".format(data_path))
-        y_test.sort()
+    X_test = glob("{}/images/*".format(data_path))
+    X_test.sort()
+    y_test = glob("{}/masks/*".format(data_path))
+    y_test.sort()
 
-        transform = A.Compose(
-            [
-                A.Resize(height=352, width=352),
-                A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
-            ]
-        )
+    transform = A.Compose(
+        [
+            A.Resize(height=256, width=256),
+            A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
+        ]
+    )
 
-        mask_transform = A.Compose(
-            [
-                A.Resize(height=352, width=352),
-            ]
-        )
+    mask_transform = A.Compose(
+        [
+            A.Resize(height=256, width=256),
+        ]
+    )
 
-        test_dataset = Dataset(
-            X_test, y_test, transform=transform, mask_transform=mask_transform
-        )
-        test_loader = torch.utils.data.DataLoader(
-            test_dataset, batch_size=1, shuffle=False, pin_memory=True, drop_last=True
-        )
+    test_dataset = Dataset(
+        X_test, y_test, transform=transform, mask_transform=mask_transform
+    )
+    test_loader = torch.utils.data.DataLoader(
+        test_dataset, batch_size=1, shuffle=False, pin_memory=True, drop_last=True
+    )
 
-        save_path = "worst_results/{}/".format(_ds)
-        if not os.path.exists(save_path):
-            os.makedirs(save_path, exist_ok=True)
-        else:
-            print("Save path existed")
-
-        inference(model, test_loader, device, _ds)
+    inference(model, test_loader, device)
