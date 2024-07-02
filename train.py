@@ -249,8 +249,8 @@ if __name__ == "__main__":
                 # ---- data prepare ----
                 images, gts = pack
 
-                images = images.to(device)
-                gts = gts.to(device)
+                images = images.cuda(non_blocking=True).float()
+                gts = gts.cuda(non_blocking=True).float()
 
                 # ---- forward ----
                 map4, map3, map2, map1 = model(images)
