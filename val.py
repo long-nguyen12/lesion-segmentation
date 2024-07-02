@@ -46,9 +46,7 @@ class Dataset(torch.utils.data.Dataset):
         mask = mask.astype("float32") / 255
         mask = mask.transpose((2, 0, 1))
 
-        img_name = img_path.split("\\")[-1]
-
-        return np.asarray(image), np.asarray(mask), img_name
+        return np.asarray(image), np.asarray(mask)
 
 
 epsilon = 1e-7
