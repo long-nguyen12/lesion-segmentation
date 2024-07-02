@@ -184,7 +184,7 @@ if __name__ == "__main__":
     # x = torch.randn(1, 3, 352, 352)
     # CalParams(model, x)
 
-    checkpoint = torch.load(f"snapshots/{args.train_save}/best.pth", map_location="cpu")
+    checkpoint = torch.load(f"snapshots/{args.train_save}/last.pth", map_location="cpu")
 
     model.load_state_dict(checkpoint, strict=True)
     data_path = f"{args.test_path}/test/"
