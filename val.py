@@ -32,12 +32,13 @@ class Dataset(torch.utils.data.Dataset):
         mask = cv2.imread(mask_path, 0)
 
         if self.transform is not None:
-            img_aug = self.transform(image=image)
+            img_aug = self.transform(image=image, mask=mask)
             image = img_aug["image"]
+            mask = img_aug["mask"]
 
-        if self.mask_transform is not None:
-            mask_aug = self.mask_transform(image=mask)
-            mask = mask_aug["image"]
+        # if self.mask_transform is not None:
+        #     mask_aug = self.mask_transform(image=mask)
+        #     mask = mask_aug["image"]
 
         image = image.astype("float32") / 255
         image = image.transpose((2, 0, 1))
@@ -196,7 +197,7 @@ if __name__ == "__main__":
     transform = A.Compose(
         [
             A.Resize(height=256, width=256),
-            A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
+            # A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
         ]
     )
 

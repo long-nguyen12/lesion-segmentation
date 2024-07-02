@@ -6,6 +6,7 @@ from .mscan import MSCAN
 from .convnext import ConvNeXt
 from .davit import DaViT
 from .pvtv2 import PVTv2
+from .mix_transformer import mit_b3
 
 __all__ = [
     "UNet",
@@ -15,5 +16,6 @@ __all__ = [
     "MSCAN",
     "ConvNeXt",
     "DaViT",
-    "PVTv2"
+    "PVTv2",
+    "mit_b3",
 ]

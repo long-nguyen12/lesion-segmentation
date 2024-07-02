@@ -14,7 +14,7 @@ from torch.autograd import Variable
 from mmseg import __version__
 from mmseg.models.segmentors import LesionSegmentation as UNet
 from schedulers import WarmupPolyLR
-from utils import AvgMeter, clip_gradient
+from utils import AvgMeter, clip_gradient, BceDiceLoss
 from val import inference
 
 
@@ -37,12 +37,13 @@ class Dataset(torch.utils.data.Dataset):
         mask = cv2.imread(mask_path, 0)
 
         if self.transform is not None:
-            img_aug = self.transform(image=image)
+            img_aug = self.transform(image=image, mask=mask)
             image = img_aug["image"]
+            mask = img_aug["mask"]
 
-        if self.mask_transform is not None:
-            mask_aug = self.mask_transform(image=mask)
-            mask = mask_aug["image"]
+        # if self.mask_transform is not None:
+        #     mask_aug = self.mask_transform(image=mask)
+        #     mask = mask_aug["image"]
 
         image = image.astype("float32") / 255
         image = image.transpose((2, 0, 1))
@@ -99,7 +100,7 @@ def structure_loss(pred, mask):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--num_epochs", type=int, default=100, help="epoch number")
-    parser.add_argument("--init_lr", type=float, default=1e-4, help="learning rate")
+    parser.add_argument("--init_lr", type=float, default=1e-3, help="learning rate")
     parser.add_argument("--batchsize", type=int, default=32, help="training batch size")
     parser.add_argument(
         "--init_trainsize", type=int, default=256, help="training dataset size"
@@ -141,7 +142,9 @@ if __name__ == "__main__":
     transform = A.Compose(
         [
             A.Resize(height=256, width=256),
-            A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
+            A.HorizontalFlip(p=0.5),
+            A.VerticalFlip(),
+            # A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
         ]
     )
 
@@ -220,7 +223,7 @@ if __name__ == "__main__":
     lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
         optimizer,
         T_max=len(train_loader) * args.num_epochs,
-        eta_min=args.init_lr / 1000,
+        eta_min=args.init_lr / 100,
     )
 
     start_epoch = 1
@@ -228,6 +231,7 @@ if __name__ == "__main__":
     best_iou = 0
     loss_record = AvgMeter()
     dice, iou = AvgMeter(), AvgMeter()
+    criterion = BceDiceLoss()
 
     print("#" * 20, "Start Training", "#" * 20)
     for epoch in range(start_epoch, epochs + 1):
@@ -251,10 +255,10 @@ if __name__ == "__main__":
                 # ---- forward ----
                 map4, map3, map2, map1 = model(images)
                 loss = (
-                    structure_loss(map1, gts)
-                    + structure_loss(map2, gts)
-                    + structure_loss(map3, gts)
-                    + structure_loss(map4, gts)
+                    criterion(map1, gts)
+                    + criterion(map2, gts)
+                    + criterion(map3, gts)
+                    + criterion(map4, gts)
                 )
 
                 # ---- metrics ----
