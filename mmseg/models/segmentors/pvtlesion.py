@@ -144,4 +144,9 @@ class LesionSegmentation(nn.Module):
             x_1, scale_factor=8, mode="bilinear", align_corners=False
         )
 
+        lateral_map_1 = torch.sigmoid(lateral_map_1)
+        lateral_map_2 = torch.sigmoid(lateral_map_2)
+        lateral_map_3 = torch.sigmoid(lateral_map_3)
+        lateral_map_4 = torch.sigmoid(lateral_map_4)
+
         return lateral_map_4, lateral_map_3, lateral_map_2, lateral_map_1
