@@ -194,7 +194,7 @@ if __name__ == "__main__":
     _total_step = len(train_loader)
 
     model = UNet(
-        backbone=dict(type="PVTv2"),
+        backbone=dict(type="mit_b2"),
         decode_head=dict(
             type="UPerHead",
             in_channels=[64, 128, 320, 512],
@@ -212,14 +212,12 @@ if __name__ == "__main__":
         auxiliary_head=None,
         train_cfg=dict(),
         test_cfg=dict(mode="whole"),
-        pretrained="pretrained/pvt_v2_b2.pth",
+        pretrained="pretrained/mit_b2.pth",
     ).to(device)
 
     # ---- flops and params ----
     params = model.parameters()
-    optimizer = torch.optim.AdamW(
-        params, args.init_lr, betas=(0.9, 0.999), eps=1e-8, weight_decay=0.01
-    )
+    optimizer = torch.optim.Adam(params, args.init_lr)
     lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
         optimizer,
         T_max=len(train_loader) * args.num_epochs,
