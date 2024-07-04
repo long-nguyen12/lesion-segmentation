@@ -44,6 +44,7 @@ class LesionSegmentation(nn.Module):
         self.cbam_2 = CBAM(self.in_channels[2])
         self.cbam_3 = CBAM(self.in_channels[3])
 
+        self.CFP_0 = CFPModule(64, d=8)
         self.CFP_1 = CFPModule(128, d=8)
         self.CFP_2 = CFPModule(320, d=8)
         self.CFP_3 = CFPModule(512, d=8)
@@ -65,7 +66,7 @@ class LesionSegmentation(nn.Module):
         self.ra3_conv2 = Conv(32, 32, 3, 1, padding=1, bn_acti=True)
         self.ra3_conv3 = Conv(32, 1, 3, 1, padding=1, bn_acti=True)
 
-        self.aa_kernel_1 = AA_kernel(64, 64)
+        self.aa_kernel_0 = AA_kernel(64, 64)
         self.aa_kernel_1 = AA_kernel(128, 128)
         self.aa_kernel_2 = AA_kernel(320, 320)
         self.aa_kernel_3 = AA_kernel(512, 512)
@@ -156,9 +157,9 @@ class LesionSegmentation(nn.Module):
         )
         cfp_out_4 = self.CFP_0(x1)
         decoder_5_ra = -1 * (torch.sigmoid(decoder_5)) + 1
-        aa_atten_0 = self.aa_kernel_1(cfp_out_3)
-        aa_atten_0 += cfp_out_3
-        aa_atten_0_o = decoder_5_ra.expand(-1, 128, -1, -1).mul(aa_atten_1)
+        aa_atten_0 = self.aa_kernel_0(cfp_out_4)
+        aa_atten_0 += cfp_out_4
+        aa_atten_0_o = decoder_5_ra.expand(-1, 64, -1, -1).mul(aa_atten_0)
 
         ra_0 = self.ra0_conv1(aa_atten_0_o)
         ra_0 = self.ra0_conv2(ra_0)
