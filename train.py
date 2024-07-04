@@ -142,8 +142,8 @@ if __name__ == "__main__":
     transform = A.Compose(
         [
             A.Resize(height=256, width=256),
-            A.HorizontalFlip(p=0.5),
-            A.VerticalFlip(),
+            # A.HorizontalFlip(p=0.5),
+            # A.VerticalFlip(),
             # A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
         ]
     )
@@ -221,7 +221,7 @@ if __name__ == "__main__":
     lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
         optimizer,
         T_max=len(train_loader) * args.num_epochs,
-        eta_min=args.init_lr / 100,
+        eta_min=args.init_lr / 1000,
     )
 
     start_epoch = 1
@@ -251,12 +251,13 @@ if __name__ == "__main__":
                 gts = gts.cuda(non_blocking=True).float()
 
                 # ---- forward ----
-                map4, map3, map2, map1 = model(images)
+                map5, map4, map3, map2, map1 = model(images)
                 loss = (
                     criterion(map1, gts)
                     + criterion(map2, gts)
                     + criterion(map3, gts)
                     + criterion(map4, gts)
+                    + criterion(map5, gts)
                 )
 
                 # ---- metrics ----

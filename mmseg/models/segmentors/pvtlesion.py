@@ -49,6 +49,10 @@ class LesionSegmentation(nn.Module):
         self.CFP_3 = CFPModule(512, d=8)
         ###### dilation rate 4, 62.8
 
+        self.ra0_conv1 = Conv(64, 32, 3, 1, padding=1, bn_acti=True)
+        self.ra0_conv2 = Conv(32, 32, 3, 1, padding=1, bn_acti=True)
+        self.ra0_conv3 = Conv(32, 1, 3, 1, padding=1, bn_acti=True)
+        
         self.ra1_conv1 = Conv(128, 32, 3, 1, padding=1, bn_acti=True)
         self.ra1_conv2 = Conv(32, 32, 3, 1, padding=1, bn_acti=True)
         self.ra1_conv3 = Conv(32, 1, 3, 1, padding=1, bn_acti=True)
@@ -61,6 +65,7 @@ class LesionSegmentation(nn.Module):
         self.ra3_conv2 = Conv(32, 32, 3, 1, padding=1, bn_acti=True)
         self.ra3_conv3 = Conv(32, 1, 3, 1, padding=1, bn_acti=True)
 
+        self.aa_kernel_1 = AA_kernel(64, 64)
         self.aa_kernel_1 = AA_kernel(128, 128)
         self.aa_kernel_2 = AA_kernel(320, 320)
         self.aa_kernel_3 = AA_kernel(512, 512)
@@ -72,17 +77,18 @@ class LesionSegmentation(nn.Module):
         x2 = segout[1]  # 128x44x44
         x3 = segout[2]  # 320x22x22
         x4 = segout[3]  # 512x11x11
+        
         x1_size = x1.size()[2:]
         x2_size = x2.size()[2:]
         x3_size = x3.size()[2:]
         x4_size = x4.size()[2:]
 
-        x_1 = self.cbam_0(x1)
-        x_2 = self.cbam_1(x2)
-        x_3 = self.cbam_2(x3)
-        x_4 = self.cbam_3(x4)
+        xc_1 = self.cbam_0(x1)
+        xc_2 = self.cbam_1(x2)
+        xc_3 = self.cbam_2(x3)
+        xc_4 = self.cbam_3(x4)
 
-        decoder_1 = self.decode_head.forward([x_1, x_2, x_3, x_4])  # 88x88
+        decoder_1 = self.decode_head.forward([xc_1, xc_2, xc_3, xc_4])  # 88x88
         lateral_map_1 = F.interpolate(
             decoder_1, size=x.shape[2:], mode="bilinear", align_corners=False
         )
@@ -141,12 +147,32 @@ class LesionSegmentation(nn.Module):
 
         x_1 = ra_1 + decoder_4
         lateral_map_4 = F.interpolate(
-            x_1, scale_factor=8, mode="bilinear", align_corners=False
+            x_1, size=x.shape[2:], mode="bilinear", align_corners=False
+        )
+        
+        # ------------------- atten-four -----------------------
+        decoder_5 = F.interpolate(
+            x_1, size=x1_size, mode="bilinear", align_corners=False
+        )
+        cfp_out_4 = self.CFP_0(x1)
+        decoder_5_ra = -1 * (torch.sigmoid(decoder_5)) + 1
+        aa_atten_0 = self.aa_kernel_1(cfp_out_3)
+        aa_atten_0 += cfp_out_3
+        aa_atten_0_o = decoder_5_ra.expand(-1, 128, -1, -1).mul(aa_atten_1)
+
+        ra_0 = self.ra0_conv1(aa_atten_0_o)
+        ra_0 = self.ra0_conv2(ra_0)
+        ra_0 = self.ra0_conv3(ra_0)
+
+        x_0 = ra_0 + decoder_5
+        lateral_map_5 = F.interpolate(
+            x_0, size=x.shape[2:], mode="bilinear", align_corners=False
         )
 
         lateral_map_1 = torch.sigmoid(lateral_map_1)
         lateral_map_2 = torch.sigmoid(lateral_map_2)
         lateral_map_3 = torch.sigmoid(lateral_map_3)
         lateral_map_4 = torch.sigmoid(lateral_map_4)
+        lateral_map_5 = torch.sigmoid(lateral_map_5)
 
-        return lateral_map_4, lateral_map_3, lateral_map_2, lateral_map_1
+        return lateral_map_5, lateral_map_4, lateral_map_3, lateral_map_2, lateral_map_1
