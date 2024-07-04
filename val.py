@@ -160,7 +160,7 @@ if __name__ == "__main__":
     device = torch.device("cuda")
 
     model = UNet(
-        backbone=dict(type="PVTv2"),
+        backbone=dict(type="mit_b2"),
         decode_head=dict(
             type="UPerHead",
             in_channels=[64, 128, 320, 512],
@@ -178,7 +178,7 @@ if __name__ == "__main__":
         auxiliary_head=None,
         train_cfg=dict(),
         test_cfg=dict(mode="whole"),
-        pretrained="pretrained/pvt_v2_b2.pth",
+        pretrained="pretrained/mit_b2.pth",
     ).to(device)
 
     # x = torch.randn(1, 3, 352, 352)
