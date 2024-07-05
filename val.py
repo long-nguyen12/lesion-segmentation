@@ -170,6 +170,7 @@ if __name__ == "__main__":
             num_classes=1,
             norm_cfg=dict(type="BN", requires_grad=True),
             align_corners=False,
+            decoder_params=dict(embed_dim=768),
             loss_decode=dict(
                 type="CrossEntropyLoss", use_sigmoid=True, loss_weight=1.0
             ),
