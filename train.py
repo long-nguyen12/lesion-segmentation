@@ -111,16 +111,16 @@ if __name__ == "__main__":
     parser.add_argument(
         "--train_path",
         type=str,
-        default="./data/isic-2017/training",
+        default="./data/isic-2018/training",
         help="path to train dataset",
     )
     parser.add_argument(
         "--val_path",
         type=str,
-        default="./data/isic-2017/validation",
+        default="./data/isic-2018/validation",
         help="path to train dataset",
     )
-    parser.add_argument("--train_save", type=str, default="lesion-seg")
+    parser.add_argument("--train_save", type=str, default="lesion-seg-1")
     args = parser.parse_args()
 
     epochs = args.num_epochs
