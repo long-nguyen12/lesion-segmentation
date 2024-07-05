@@ -99,7 +99,7 @@ def structure_loss(pred, mask):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--num_epochs", type=int, default=100, help="epoch number")
+    parser.add_argument("--num_epochs", type=int, default=50, help="epoch number")
     parser.add_argument("--init_lr", type=float, default=1e-3, help="learning rate")
     parser.add_argument("--batchsize", type=int, default=32, help="training batch size")
     parser.add_argument(
