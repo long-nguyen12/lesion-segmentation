@@ -196,7 +196,7 @@ if __name__ == "__main__":
     model = UNet(
         backbone=dict(type="mit_b2"),
         decode_head=dict(
-            type="UPerHead",
+            type="SegFormerHead",
             in_channels=[64, 128, 320, 512],
             in_index=[0, 1, 2, 3],
             channels=128,
@@ -204,6 +204,7 @@ if __name__ == "__main__":
             num_classes=1,
             norm_cfg=dict(type="BN", requires_grad=True),
             align_corners=False,
+            decoder_params=dict(embed_dim=768),
             loss_decode=dict(
                 type="CrossEntropyLoss", use_sigmoid=True, loss_weight=1.0
             ),

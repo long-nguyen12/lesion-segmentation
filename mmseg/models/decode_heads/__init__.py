@@ -27,6 +27,7 @@ from .setr_mla_head import SETRMLAHead
 from .pan_head import PANDecoder
 from .mlp_pan_head import MLPPanHead
 from .pan_uper_head import PANUPerHead
+from .segformer_head import SegFormerHead
 
 __all__ = [
     "FCNHead",
@@ -58,4 +59,5 @@ __all__ = [
     "PANDecoder",
     "MLPPanHead",
     "PANUPerHead",
+    "SegFormerHead",
 ]

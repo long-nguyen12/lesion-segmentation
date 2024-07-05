@@ -31,6 +31,7 @@ class LesionSegmentation(nn.Module):
 
         self.train_cfg = train_cfg
         self.test_cfg = test_cfg
+        
         self.decode_head = builder.build_head(decode_head)
         self.align_corners = self.decode_head.align_corners
         self.num_classes = self.decode_head.num_classes
