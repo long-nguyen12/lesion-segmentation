@@ -8,14 +8,26 @@ import cv2
 import numpy as np
 import torch
 import torch.nn.functional as F
-from albumentations.pytorch import ToTensorV2
-from torch.autograd import Variable
 
 from mmseg import __version__
 from mmseg.models.segmentors import LesionSegmentation as UNet
 from schedulers import WarmupPolyLR
-from utils import AvgMeter, clip_gradient, BceDiceLoss
+from utils import AvgMeter, BceDiceLoss, clip_gradient
 from val import inference
+
+
+def structure_loss(pred, mask):
+    weit = 1 + 5 * torch.abs(
+        F.avg_pool2d(mask, kernel_size=31, stride=1, padding=15) - mask
+    )
+    wbce = F.binary_cross_entropy_with_logits(pred, mask, reduce="none")
+    wbce = (weit * wbce).sum(dim=(2, 3)) / weit.sum(dim=(2, 3))
+
+    pred = torch.sigmoid(pred)
+    inter = ((pred * mask) * weit).sum(dim=(2, 3))
+    union = ((pred + mask) * weit).sum(dim=(2, 3))
+    wiou = 1 - (inter + 1) / (union - inter + 1)
+    return (wbce + wiou).mean()
 
 
 class Dataset(torch.utils.data.Dataset):
@@ -139,20 +151,9 @@ if __name__ == "__main__":
     train_img_paths.sort()
     train_mask_paths.sort()
 
-    transform = A.Compose(
-        [
-            A.Resize(height=256, width=256),
-            # A.HorizontalFlip(p=0.5),
-            # A.VerticalFlip(),
-            # A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
-        ]
-    )
+    transform = A.Compose([A.Resize(height=256, width=256)])
 
-    mask_transform = A.Compose(
-        [
-            A.Resize(height=256, width=256),
-        ]
-    )
+    mask_transform = A.Compose([A.Resize(height=256, width=256)])
 
     train_dataset = Dataset(
         train_img_paths,
@@ -219,7 +220,9 @@ if __name__ == "__main__":
 
     # ---- flops and params ----
     params = model.parameters()
-    optimizer = torch.optim.Adam(params, args.init_lr)
+    optimizer = torch.optim.AdamW(
+        params, args.init_lr, betas=(0.9, 0.999), eps=1e-8, weight_decay=0.01
+    )
     lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
         optimizer,
         T_max=len(train_loader) * args.num_epochs,
@@ -231,7 +234,7 @@ if __name__ == "__main__":
     best_iou = 0
     loss_record = AvgMeter()
     dice, iou = AvgMeter(), AvgMeter()
-    criterion = BceDiceLoss()
+    # criterion = BceDiceLoss()
 
     print("#" * 20, "Start Training", "#" * 20)
     for epoch in range(start_epoch, epochs + 1):
@@ -255,10 +258,10 @@ if __name__ == "__main__":
                 # ---- forward ----
                 map4, map3, map2, map1 = model(images)
                 loss = (
-                    criterion(map1, gts)
-                    + criterion(map2, gts)
-                    + criterion(map3, gts)
-                    + criterion(map4, gts)
+                    structure_loss(map1, gts)
+                    + structure_loss(map2, gts)
+                    + structure_loss(map3, gts)
+                    + structure_loss(map4, gts)
                 )
 
                 # ---- metrics ----

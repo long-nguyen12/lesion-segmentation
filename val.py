@@ -36,10 +36,6 @@ class Dataset(torch.utils.data.Dataset):
             image = img_aug["image"]
             mask = img_aug["mask"]
 
-        # if self.mask_transform is not None:
-        #     mask_aug = self.mask_transform(image=mask)
-        #     mask = mask_aug["image"]
-
         image = image.astype("float32") / 255
         image = image.transpose((2, 0, 1))
 
