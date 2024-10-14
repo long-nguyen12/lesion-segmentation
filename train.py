@@ -111,16 +111,16 @@ if __name__ == "__main__":
     parser.add_argument(
         "--train_path",
         type=str,
-        default="./data/isic-2018/training",
+        default="./data/isic-2017/training",
         help="path to train dataset",
     )
     parser.add_argument(
         "--val_path",
         type=str,
-        default="./data/isic-2018/validation",
+        default="./data/isic-2017/validation",
         help="path to train dataset",
     )
-    parser.add_argument("--train_save", type=str, default="lesion-seg-1")
+    parser.add_argument("--train_save", type=str, default="lesion-seg")
     args = parser.parse_args()
 
     epochs = args.num_epochs
@@ -192,6 +192,7 @@ if __name__ == "__main__":
     )
 
     _total_step = len(train_loader)
+    print(_total_step)
 
     model = UNet(
         backbone=dict(type="mit_b2"),
@@ -248,17 +249,16 @@ if __name__ == "__main__":
                 # ---- data prepare ----
                 images, gts = pack
 
-                images = images.cuda(non_blocking=True).float()
-                gts = gts.cuda(non_blocking=True).float()
+                images = images.to(device)
+                gts = gts.to(device)
 
                 # ---- forward ----
-                map5, map4, map3, map2, map1 = model(images)
+                map4, map3, map2, map1 = model(images)
                 loss = (
                     criterion(map1, gts)
                     + criterion(map2, gts)
                     + criterion(map3, gts)
                     + criterion(map4, gts)
-                    + criterion(map5, gts)
                 )
 
                 # ---- metrics ----
