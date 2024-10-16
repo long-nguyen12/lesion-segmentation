@@ -12,6 +12,7 @@ class FusionModule(nn.Module):
         self.aa_1 = AA_kernel(in_channels, out_channels)
         self.aa_2 = AA_kernel(out_channels, out_channels)
         self.cbam = CBAM(out_channels)
+        self.conv11 = Conv(in_channels, out_channels, 1, 1, 0)
         self.conv_1 = Conv(2 * out_channels, out_channels, 3, 1, 1)
         self.conv_2 = Conv(2 * out_channels, out_channels, 5, 1, 2)
     
@@ -20,8 +21,9 @@ class FusionModule(nn.Module):
             i_high, size=i_low.shape[2:], mode="bilinear", align_corners=False
         )
         
-        i_high = self.aa_1(i_high)
-        i_low = self.aa_2(i_low)
+        # i_high = self.cbam(self.conv11(i_high))
+        # i_low = self.cbam(i_low)
+        i_high = self.conv11(i_high)
         
         i_cat = torch.cat([i_low, i_high], dim=1)
         i_3 = self.conv_1(i_cat)

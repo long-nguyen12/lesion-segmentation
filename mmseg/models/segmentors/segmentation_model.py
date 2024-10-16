@@ -43,9 +43,9 @@ class LesionSegmentation(nn.Module):
         self.cbam_2 = CBAM(self.in_channels[2])
         self.cbam_3 = CBAM(self.in_channels[3])
 
-        # self.CFP_0 = CFPModule(64, d=8)
-        # self.CFP_1 = CFPModule(128, d=8)
-        # self.CFP_2 = CFPModule(320, d=8)
+        self.CFP_0 = CFPModule(64, d=8)
+        self.CFP_1 = CFPModule(128, d=8)
+        self.CFP_2 = CFPModule(320, d=8)
         # self.CFP_3 = CFPModule(512, d=8)
         ###### dilation rate 4, 62.8
 
@@ -82,14 +82,14 @@ class LesionSegmentation(nn.Module):
         x3_size = x3.size()[2:]
         x4_size = x4.size()[2:]
 
-        fuse_1 = self.fusion_1(x4, x3)
-        fuse_2 = self.fusion_2(x3, x2)
-        fuse_3 = self.fusion_3(x2, x1)
-
         xc_1 = self.cbam_0(x1)
         xc_2 = self.cbam_1(x2)
         xc_3 = self.cbam_2(x3)
         xc_4 = self.cbam_3(x4)
+        
+        fuse_1 = self.fusion_1(xc_4, xc_3)
+        fuse_2 = self.fusion_2(xc_3, xc_2)
+        fuse_3 = self.fusion_3(xc_2, xc_1)
 
         decoder_3 = self.decode_head.forward([xc_1, xc_2, xc_3, xc_4])
         lateral_map_1 = F.interpolate(
@@ -101,7 +101,8 @@ class LesionSegmentation(nn.Module):
             decoder_3, size=fuse_1.size()[2:], mode="bilinear", align_corners=False
         )
         decoder_2_ra = -1 * (torch.sigmoid(decoder_2)) + 1
-        aa_atten_2_o = decoder_2_ra.expand(-1, 320, -1, -1).mul(fuse_1)
+        cfp_out_1 = self.CFP_2(fuse_1)
+        aa_atten_2_o = decoder_2_ra.expand(-1, 320, -1, -1).mul(cfp_out_1)
 
         ra_2 = self.ra2_conv1(aa_atten_2_o)
         ra_2 = self.ra2_conv2(ra_2)
@@ -116,11 +117,11 @@ class LesionSegmentation(nn.Module):
         decoder_1 = F.interpolate(
             x_2, size=fuse_2.size()[2:], mode="bilinear", align_corners=False
         )
-        # cfp_out_3 = self.CFP_1(x2)
+        cfp_out_2 = self.CFP_1(fuse_2)
         decoder_1_ra = -1 * (torch.sigmoid(decoder_1)) + 1
         # aa_atten_1 = self.aa_kernel_1(cfp_out_3)
         # aa_atten_1 += cfp_out_3
-        aa_atten_1_o = decoder_1_ra.expand(-1, 128, -1, -1).mul(fuse_2)
+        aa_atten_1_o = decoder_1_ra.expand(-1, 128, -1, -1).mul(cfp_out_2)
 
         ra_1 = self.ra1_conv1(aa_atten_1_o)
         ra_1 = self.ra1_conv2(ra_1)
@@ -135,11 +136,11 @@ class LesionSegmentation(nn.Module):
         decoder_0 = F.interpolate(
             x_1, size=fuse_3.size()[2:], mode="bilinear", align_corners=False
         )
-        # cfp_out_4 = self.CFP_0(x1)
+        cfp_out_3 = self.CFP_0(fuse_3)
         decoder_0_ra = -1 * (torch.sigmoid(decoder_0)) + 1
         # aa_atten_0 = self.aa_kernel_0(cfp_out_4)
         # aa_atten_0 += cfp_out_4
-        aa_atten_0_o = decoder_0_ra.expand(-1, 64, -1, -1).mul(fuse_3)
+        aa_atten_0_o = decoder_0_ra.expand(-1, 64, -1, -1).mul(cfp_out_3)
 
         ra_0 = self.ra0_conv1(aa_atten_0_o)
         ra_0 = self.ra0_conv2(ra_0)
